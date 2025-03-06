@@ -1,26 +1,38 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "package.json",
-        "use": "@vercel/node",
-        "config": {
-          "command": "npm run dev"
-        }
-      },
-      {
-        "src": "src/*.html",
-        "use": "@vercel/static"
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/node",
+      "config": {
+        "command": "npm run dev"
       }
-    ],
-    "routes": [
-      {
-        "src": "/dashboard",
-        "dest": "/src/dashboard.html"
-      },
-      {
-        "src": "/(.*)",
-        "dest": "/src/index.html"
-      }
-    ]
-  }
+    },
+    {
+      "src": "*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "public/css/*.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "public/img/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "js/*.js",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/dashboard",
+      "dest": "/dashboard.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
