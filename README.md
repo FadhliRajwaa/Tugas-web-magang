@@ -1,3 +1,7 @@
+## Link Demo Web
+*[Demo Website](https://tugas-web-magang.vercel.app)*
+
+
 ## Preview
 Berikut adalah tampilan dari halaman utama dan dashboard:
 ![Preview Index Page](./public/img/screenshoot-utama.jpg)
