@@ -1,9 +1,9 @@
 ## Preview
 Berikut adalah tampilan dari halaman utama dan dashboard:
-![Preview Index Page](src/screenshoot-utama.jpg)
+![Preview Index Page](./public/img/screenshoot-utama.jpg)
 *Halaman Utama - Menampilkan tabel data dengan filter dan pagination*
 
-![Preview Dashboard Page](src/screenshoot-dashboard.jpg)
+![Preview Dashboard Page](./public/img/screenshoot-dashboard.jpg)
 *Dashboard Admin - Form input dan tabel pengelolaan data*
 
 # Kelurahan/Kecamatan Dashboard
