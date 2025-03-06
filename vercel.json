@@ -1,42 +1,58 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "package.json",
-        "use": "@vercel/node",
-        "config": {
-          "command": "npm install && chmod +x node_modules/.bin/tailwindcss && npm run build"
-        }
-      },
-      {
-        "src": "*.html",
-        "use": "@vercel/static"
-      },
-      {
-        "src": "public/css/*.css",
-        "use": "@vercel/static"
-      },
-      {
-        "src": "src/css/*.css",
-        "use": "@vercel/static"
-      },
-      {
-        "src": "public/img/*",
-        "use": "@vercel/static"
-      },
-      {
-        "src": "js/*.js",
-        "use": "@vercel/static"
-      }
-    ],
     "routes": [
+      {
+        "src": "/",
+        "dest": "/index.html"
+      },
       {
         "src": "/dashboard",
         "dest": "/dashboard.html"
       },
       {
+        "src": "/css/(.*)",
+        "dest": "/public/css/$1"
+      },
+      {
+        "src": "/js/(.*)",
+        "dest": "/public/js/$1"
+      },
+      {
+        "src": "/img/(.*)",
+        "dest": "/public/img/$1"
+      },
+      {
         "src": "/(.*)",
-        "dest": "/index.html"
+        "dest": "/index.html",
+        "status": 404
+      }
+    ],
+    "headers": [
+      {
+        "source": "/public/css/(.*)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
+      {
+        "source": "/public/js/(.*)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
+      {
+        "source": "/public/img/(.*)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=604800, must-revalidate"
+          }
+        ]
       }
     ]
   }
