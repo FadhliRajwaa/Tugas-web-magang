@@ -1,3 +1,11 @@
+## Preview
+Berikut adalah tampilan dari halaman utama dan dashboard:
+![Preview Index Page](src/screenshoot-utama.jpg)
+*Halaman Utama - Menampilkan tabel data dengan filter dan pagination*
+
+![Preview Dashboard Page](src/screenshoot-dashboard.jpg)
+*Dashboard Admin - Form input dan tabel pengelolaan data*
+
 # Kelurahan/Kecamatan Dashboard
 Website ini adalah web yang dirancang untuk mengelola informasi kelurahan dan kecamatan dengan tampilan yang modern dan fungsional. Dibangun menggunakan HTML5, Tailwind CSS, dan JavaScript, proyek ini menggabungkan desain responsif dengan fitur interaktif untuk pengalaman pengguna yang optimal di berbagai perangkat.
 
