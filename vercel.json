@@ -1,0 +1,38 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "package.json",
+        "use": "@vercel/node",
+        "config": {
+          "command": "npm install && chmod +x node_modules/.bin/tailwindcss && npm run build"
+        }
+      },
+      {
+        "src": "*.html",
+        "use": "@vercel/static"
+      },
+      {
+        "src": "public/css/*.css",
+        "use": "@vercel/static"
+      },
+      {
+        "src": "public/img/*",
+        "use": "@vercel/static"
+      },
+      {
+        "src": "js/*.js",
+        "use": "@vercel/static"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/dashboard",
+        "dest": "/dashboard.html"
+      },
+      {
+        "src": "/(.*)",
+        "dest": "/index.html"
+      }
+    ]
+  }
