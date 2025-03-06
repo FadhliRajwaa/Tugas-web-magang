@@ -2202,7 +2202,7 @@
     outline-style: solid;
   }
   .\[default\:\\u202F\$\{N\(\`\$\{u\}\`\)\}\] {
-    
+    default: \u202F${N(`${u}`)};
   }
   .backface-hidden {
     backface-visibility: hidden;
@@ -2569,7 +2569,7 @@
       padding-inline: calc(var(--spacing) * 8);
     }
   }
-
+}
 @property --tw-translate-x {
   syntax: "*";
   inherits: false;
@@ -2900,6 +2900,4 @@
 @property --tw-contain-style {
   syntax: "*";
   inherits: false;
-}
-
 }
