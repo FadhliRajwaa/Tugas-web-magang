@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="./output.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Navbar -->
+    <nav class="sticky top-0 bg-white border-b border-gray-200 shadow-sm z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <img src="./logo-semarang.png" alt="Logo" class="h-10 w-10 rounded-md">
+                    <span class="ml-3 text-xl font-semibold text-gray-900">Kelola Lokasi</span>
+                </div>
+                <a href="./index.html" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    Kembali
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8 flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-gray-900">Kelola Data Lokasi</h1>
+        </div>
+
+        <!-- Form Input -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-200">
+            <form id="dataForm" class="space-y-6">
+                <input type="hidden" id="dataId">
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    <!-- Form fields -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nama Kecamatan</label>
+                        <input type="text" id="kecamatan" required
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nama Kelurahan</label>
+                        <input type="text" id="kelurahan" required
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Kode Pos</label>
+                        <input type="text" id="kodePos" required
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Alamat</label>
+                        <input type="text" id="alamat" required
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Fasilitas (pisahkan dengan koma)</label>
+                        <input type="text" id="fasilitas"
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Link Peta</label>
+                        <input type="url" id="mapLink" placeholder="https://maps.google.com/..."
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Upload Gambar</label>
+                        <div class="relative group">
+                            <input type="file" id="gambar" accept="image/*"
+                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                            <div class="px-4 py-2 rounded-lg border border-gray-300 group-hover:border-blue-500 transition-colors">
+                                <span class="text-gray-600">Pilih File</span>
+                            </div>
+                        </div>
+                        <img id="previewImage" class="mt-2 w-20 h-20 object-cover rounded-lg shadow-sm hidden">
+                    </div>
+                </div>
+                <div class="pt-6">
+                    <button type="submit" class="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+                        </svg>
+                        Simpan Data
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabel Data -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Aksi</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Kecamatan</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Kelurahan</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Alamat</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Fasilitas</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Peta</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Gambar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTable" class="divide-y divide-gray-200">
+                        <!-- Data akan diisi oleh JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
