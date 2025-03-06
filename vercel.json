@@ -2,6 +2,13 @@
     "version": 2,
     "builds": [
       {
+        "src": "src/input.css",
+        "use": "@vercel/static",
+        "config": {
+          "command": "npm run build"
+        }
+      },
+      {
         "src": "src/*.html",
         "use": "@vercel/static"
       }
