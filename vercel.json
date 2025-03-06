@@ -2,19 +2,7 @@
     "version": 2,
     "builds": [
       {
-        "src": "index.html",
-        "use": "@vercel/static"
-      },
-      {
-        "src": "dashboard.html",
-        "use": "@vercel/static"
-      },
-      {
         "src": "public/css/output.css",
-        "use": "@vercel/static"
-      },
-      {
-        "src": "src/css/input.css",
         "use": "@vercel/static"
       },
       {
@@ -22,14 +10,14 @@
         "use": "@vercel/static"
       },
       {
-        "src": "public/img/*",
+        "src": "src/*.html",
         "use": "@vercel/static"
       }
     ],
     "routes": [
       {
         "src": "/(.*)",
-        "dest": "/index.html"
+        "dest": "/src/index.html"
       }
     ]
   }
