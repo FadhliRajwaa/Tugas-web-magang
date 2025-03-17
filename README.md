@@ -46,5 +46,5 @@ Website ini adalah web yang dirancang untuk mengelola informasi kelurahan dan ke
    + `@import "tailwindcss";`
 
 4. Menjalankan Tailwind CSS:
-   + `npx @tailwindcss/cli -i ./src/input.css -o ./src/output.css --watch`
+   + `npx @tailwindcss/cli -i ./src/css/input.css -o ./public/css/output.css --watch`
 
