@@ -1,9 +1,29 @@
 {
   "dependencies": {
     "@tailwindcss/cli": "^4.0.11",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
     "tailwindcss": "^4.0.11"
   },
   "scripts": {
     "dev": "npx @tailwindcss/cli -i ./src/css/input.css -o ./public/css/output.css --watch"
-  }
+  },
+  "name": "tugas-magang",
+  "version": "1.0.0",
+  "description": "*[Demo Website](https://tugas-web-magang.vercel.app)*",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FadhliRajwaa/Tugas-web-magang.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/FadhliRajwaa/Tugas-web-magang/issues"
+  },
+  "homepage": "https://github.com/FadhliRajwaa/Tugas-web-magang#readme"
 }
