@@ -9,8 +9,6 @@ if (!localStorage.getItem('lokasiData')) {
     localStorage.setItem('lokasiData', JSON.stringify([]));
 }
 
-// ... (rest of the code)
-
 const form = document.getElementById('dataForm');
 const tableBody = document.getElementById('dataTable');
 const imageInput = document.getElementById('gambar');
@@ -64,9 +62,25 @@ imageInput.addEventListener('change', function(e) {
     }
 });
 
+// Function to parse latitude and longitude from Google Maps URL
+function parseCoordinatesFromMapLink(mapLink) {
+    if (!mapLink) return { latitude: null, longitude: null };
+
+    // Example URL: https://www.google.com/maps/place/.../@-6.9667,110.4167,12z
+    const regex = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
+    const match = mapLink.match(regex);
+    if (match) {
+        return {
+            latitude: parseFloat(match[1]),
+            longitude: parseFloat(match[2])
+        };
+    }
+    return { latitude: null, longitude: null };
+}
+
 // Fungsi untuk menampilkan data
 function renderData() {
-    const data = JSON.parse(localStorage.getItem('lokasiData'));
+    const data = JSON.parse(localStorage.getItem('lokasiData')) || [];
     tableBody.innerHTML = '';
     
     data.forEach((item, index) => {
@@ -143,78 +157,47 @@ form.addEventListener('submit', (e) => {
     }
 });
 
-// Function to parse latitude and longitude from Google Maps URL
-function parseCoordinatesFromMapLink(mapLink) {
-    if (!mapLink) return { latitude: null, longitude: null };
-
-    // Example URL: https://www.google.com/maps/place/.../@-6.9667,110.4167,12z
-    const regex = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
-    const match = mapLink.match(regex);
-    if (match) {
-        return {
-            latitude: parseFloat(match[1]),
-            longitude: parseFloat(match[2])
-        };
-    }
-    return { latitude: null, longitude: null };
-}
-
-// Fungsi untuk menambah/mengupdate data
-form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const file = imageInput.files[0];
-    
-    if (file) {
-        compressImage(file, function(compressedImage) {
-            saveData(compressedImage);
-        });
-    } else {
-        const existingImage = document.getElementById('dataId').value 
-            ? JSON.parse(localStorage.getItem('lokasiData')).find(item => item.id == document.getElementById('dataId').value).gambar 
-            : '';
-        saveData(existingImage);
-    }
-});
-
 function saveData(imageData) {
-    const mapLink = document.getElementById('mapLink').value;
+    const mapLink = document.getElementById('mapLink')?.value || '';
     const { latitude, longitude } = parseCoordinatesFromMapLink(mapLink);
 
     const data = {
-        id: document.getElementById('dataId').value || Date.now(),
-        kecamatan: document.getElementById('kecamatan').value,
-        kelurahan: document.getElementById('kelurahan').value,
-        alamat: document.getElementById('alamat').value,
-        kodePos: document.getElementById('kodePos').value,
-        fasilitas: document.getElementById('fasilitas').value ? document.getElementById('fasilitas').value.split(',').map(f => f.trim()) : [],
+        id: document.getElementById('dataId')?.value || Date.now(),
+        kecamatan: document.getElementById('kecamatan')?.value || '',
+        kelurahan: document.getElementById('kelurahan')?.value || '',
+        alamat: document.getElementById('alamat')?.value || '',
+        kodePos: document.getElementById('kodePos')?.value || '',
+        fasilitas: document.getElementById('fasilitas')?.value ? document.getElementById('fasilitas').value.split(',').map(f => f.trim()) : [],
         mapLink: mapLink,
-        latitude: latitude, // Now a valid value (or null if parsing fails)
-        longitude: longitude, // Now a valid value (or null if parsing fails)
+        latitude: latitude,
+        longitude: longitude,
         gambar: imageData
     };
     
-    let storedData = JSON.parse(localStorage.getItem('lokasiData'));
+    let storedData = JSON.parse(localStorage.getItem('lokasiData')) || [];
     
-    if (document.getElementById('dataId').value) {
+    if (document.getElementById('dataId')?.value) {
         const index = storedData.findIndex(item => item.id == data.id);
-        storedData[index] = data;
+        if (index !== -1) {
+            storedData[index] = data;
+        } else {
+            console.warn('Data ID not found for editing:', data.id);
+            storedData.push(data);
+        }
     } else {
         storedData.push(data);
     }
     
     try {
         localStorage.setItem('lokasiData', JSON.stringify(storedData));
+        console.log('Data saved to localStorage:', storedData);
         form.reset();
         document.getElementById('dataId').value = '';
         previewImage.classList.add('hidden');
         renderData();
     } catch (e) {
-        if (e.name === 'QuotaExceededError') {
-            alert('Penyimpanan penuh! Hapus beberapa data atau gunakan gambar dengan ukuran lebih kecil.');
-        } else {
-            console.error('Error saving data:', e);
-        }
+        console.error('Error saving to localStorage:', e);
+        alert('Gagal menyimpan data: ' + e.message);
     }
 }
 

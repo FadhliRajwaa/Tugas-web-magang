@@ -1,13 +1,13 @@
-// Mobile Menu Toggle
+// Toggle Menu Mobile
 const mobileMenuButton = document.getElementById('mobile-menu-button');
 const mobileMenu = document.getElementById('mobile-menu');
 
 mobileMenuButton.addEventListener('click', () => {
     mobileMenu.classList.toggle('max-h-0');
-    mobileMenu.classList.toggle('max-h-96'); // Adjust height as needed
+    mobileMenu.classList.toggle('max-h-96'); // Sesuaikan tinggi sesuai kebutuhan
 });
 
-// Close mobile menu when clicking outside
+// Tutup menu mobile saat klik di luar
 document.addEventListener('click', (e) => {
     if (!mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target)) {
         mobileMenu.classList.add('max-h-0');
@@ -15,7 +15,7 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Navbar scroll effect
+// Efek scroll pada navbar
 window.addEventListener('scroll', () => {
     const nav = document.querySelector('nav');
     if (window.scrollY > 50) {
@@ -27,7 +27,7 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Smooth scroll
+// Smooth scroll untuk link dengan hash
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
@@ -41,7 +41,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 let currentPage = 1;
 let entriesPerPage = 5;
 let searchTerm = '';
-let userLocation = null; // Store user's current location
+let userLocation = null; // Simpan lokasi pengguna
 
 // Ambil elemen DOM
 const tbody = document.getElementById('dataTable');
@@ -51,34 +51,68 @@ const paginationInfo = document.getElementById('paginationInfo');
 const prevButton = document.getElementById('prevButton');
 const nextButton = document.getElementById('nextButton');
 
-// Get user's current location
+// Ambil lokasi pengguna dengan penanganan error yang lebih baik
 function getUserLocation() {
     return new Promise((resolve, reject) => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    userLocation = {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
-                    };
-                    resolve(userLocation);
-                },
-                (error) => {
-                    console.error('Error getting user location:', error);
-                    reject(error);
-                }
-            );
-        } else {
-            reject(new Error('Geolocation is not supported by this browser.'));
+        if (!navigator.geolocation) {
+            reject(new Error('Geolokasi tidak didukung oleh browser ini.'));
+            return;
         }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                userLocation = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                };
+                resolve(userLocation);
+            },
+            (error) => {
+                let pesanError = 'Gagal mengambil lokasi.';
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        pesanError = 'Izin lokasi ditolak. Silakan aktifkan akses lokasi di pengaturan browser Anda.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        pesanError = 'Informasi lokasi tidak tersedia. Pastikan layanan lokasi diaktifkan di perangkat Anda.';
+                        break;
+                    case error.TIMEOUT:
+                        pesanError = 'Permintaan lokasi habis waktu. Silakan coba lagi.';
+                        break;
+                    default:
+                        pesanError = 'Terjadi kesalahan saat mengambil lokasi.';
+                        break;
+                }
+                reject(new Error(pesanError));
+            },
+            {
+                enableHighAccuracy: true, // Tingkatkan akurasi untuk perangkat mobile
+                timeout: 10000, // Tunggu hingga 10 detik
+                maximumAge: 0 // Jangan gunakan lokasi yang di-cache
+            }
+        );
     });
 }
 
-// Parse latitude and longitude from Google Maps URL
-function parseCoordinatesFromMapLink(mapLink) {
-    if (!mapLink) return null;
+// Hitung jarak menggunakan rumus Haversine (mengembalikan jarak dalam kilometer)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Radius Bumi dalam kilometer
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Jarak dalam kilometer
+    return distance.toFixed(2); // Bulatkan ke 2 desimal
+}
 
-    // Example URL: https://www.google.com/maps/place/.../@-6.9667,110.4167,12z
+// Parsing koordinat dari mapLink sebagai fallback
+function parseCoordinatesFromMapLink(mapLink) {
+    if (!mapLink) return { latitude: null, longitude: null };
+
+    // Contoh URL: https://www.google.com/maps/place/.../@-6.9667,110.4167,12z
     const regex = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
     const match = mapLink.match(regex);
     if (match) {
@@ -87,29 +121,17 @@ function parseCoordinatesFromMapLink(mapLink) {
             longitude: parseFloat(match[2])
         };
     }
-    return null;
+    return { latitude: null, longitude: null };
 }
 
-// Calculate distance using the Haversine formula (returns distance in kilometers)
-function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Radius of the Earth in kilometers
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c; // Distance in kilometers
-    return distance.toFixed(2); // Round to 2 decimal places
-}
-
-// Fungsi untuk mengambil data dari localStorage
+// Ambil data dari localStorage
 function getData() {
-    return JSON.parse(localStorage.getItem('lokasiData')) || [];
+    const data = JSON.parse(localStorage.getItem('lokasiData')) || [];
+    console.log('Data diambil dari localStorage:', data); // Debugging
+    return data;
 }
 
-// Fungsi untuk memfilter data berdasarkan pencarian
+// Filter data berdasarkan pencarian
 function filterData(data) {
     if (!searchTerm) return data;
     return data.filter(item => 
@@ -118,7 +140,7 @@ function filterData(data) {
     );
 }
 
-// Fungsi untuk menampilkan data dengan pagination
+// Tampilkan data dengan pagination
 async function renderData() {
     const allData = getData();
     const filteredData = filterData(allData);
@@ -127,25 +149,50 @@ async function renderData() {
     const endIndex = Math.min(startIndex + entriesPerPage, totalEntries);
     const paginatedData = filteredData.slice(startIndex, endIndex);
 
-    // If user location is available, calculate distances
+    // Inisialisasi jarak dengan "N/A" untuk semua item
     let distances = {};
+    paginatedData.forEach(item => {
+        distances[item.id] = 'N/A'; // Nilai default
+    });
+
+    // Jika lokasi pengguna tersedia, hitung jarak
     if (userLocation) {
+        console.log('Lokasi pengguna:', userLocation); // Debugging
         paginatedData.forEach(item => {
-            const coords = parseCoordinatesFromMapLink(item.mapLink);
-            if (coords) {
-                const distance = calculateDistance(
-                    userLocation.latitude,
-                    userLocation.longitude,
-                    coords.latitude,
-                    coords.longitude
-                );
-                distances[item.id] = distance;
+            // Gunakan latitude dan longitude dari data, atau parse dari mapLink
+            let lat = item.latitude;
+            let lon = item.longitude;
+            if (!lat || !lon) {
+                const coords = parseCoordinatesFromMapLink(item.mapLink);
+                lat = coords.latitude;
+                lon = coords.longitude;
+            }
+
+            console.log(`Koordinat item ${item.id}: latitude=${lat}, longitude=${lon}`); // Debugging
+            if (lat && lon) {
+                try {
+                    const distance = calculateDistance(
+                        userLocation.latitude,
+                        userLocation.longitude,
+                        lat,
+                        lon
+                    );
+                    distances[item.id] = `${distance} km`;
+                } catch (error) {
+                    console.error(`Gagal menghitung jarak untuk item ${item.id}:`, error);
+                    distances[item.id] = 'N/A'; // Kembali ke "N/A" jika gagal
+                }
+            } else {
+                console.log(`Item ${item.id} tidak memiliki koordinat, jarak diset ke N/A`);
             }
         });
+    } else {
+        console.log('Lokasi pengguna tidak tersedia, semua jarak diset ke N/A');
     }
 
+    // Render tabel
     tbody.innerHTML = paginatedData.map((item, index) => {
-        const distance = distances[item.id] ? `${distances[item.id]} km` : 'N/A';
+        const distance = distances[item.id]; // Sudah pasti ada nilainya
         return `
         <tr class="transition-all duration-300 hover:bg-purple-50 hover:shadow-md">
             <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">${startIndex + index + 1}</td>
@@ -175,15 +222,15 @@ async function renderData() {
                 </div>
             </td>
             <td class="px-6 py-4">
-                <img src="${item.gambar || 'https://via.placeholder.com/100'}" alt="Location" class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-md shadow-sm hover:scale-110 transition-transform duration-300">
+                <img src="${item.gambar || 'https://via.placeholder.com/100'}" alt="Lokasi" class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-md shadow-sm hover:scale-110 transition-transform duration-300">
             </td>
         </tr>
     `}).join('');
 
-    // Update pagination info
+    // Perbarui informasi pagination
     paginationInfo.textContent = `Menampilkan ${startIndex + 1} - ${endIndex} dari ${totalEntries} entri`;
 
-    // Enable/disable buttons
+    // Aktifkan/nonaktifkan tombol
     prevButton.disabled = currentPage === 1;
     nextButton.disabled = endIndex >= totalEntries;
 }
@@ -219,14 +266,36 @@ nextButton.addEventListener('click', () => {
     }
 });
 
-// Initialize user location and render data on page load
+// Inisialisasi lokasi pengguna dan render data saat halaman dimuat
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         await getUserLocation();
         renderData();
     } catch (error) {
-        console.error('Failed to get user location:', error);
-        // Render data without distance if location access fails
+        console.error('Gagal mengambil lokasi pengguna:', error.message);
+        // Tampilkan pesan error kepada pengguna
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'text-red-600 text-center p-4';
+        errorDiv.textContent = error.message;
+
+        // Tambahkan tombol "Coba Lagi"
+        const retryButton = document.createElement('button');
+        retryButton.textContent = 'Coba Lagi';
+        retryButton.className = 'text-blue-600 underline ml-2';
+        retryButton.addEventListener('click', async () => {
+            try {
+                await getUserLocation();
+                errorDiv.remove();
+                renderData();
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.appendChild(retryButton);
+            }
+        });
+        errorDiv.appendChild(retryButton);
+
+        document.querySelector('main').prepend(errorDiv);
+        // Render data tanpa jarak jika akses lokasi gagal
         renderData();
     }
 });
