@@ -3,7 +3,6 @@ if (!localStorage.getItem('sessionToken')) {
     window.location.href = './index.html'; // Redirect to login page if no session token
 }
 
-// Rest of your existing dashboard.js code remains the same
 // Inisialisasi data di localStorage jika belum ada
 if (!localStorage.getItem('lokasiData')) {
     localStorage.setItem('lokasiData', JSON.stringify([]));
@@ -62,20 +61,48 @@ imageInput.addEventListener('change', function(e) {
     }
 });
 
+// Function to detect if the link is a short URL
+function isShortLink(mapLink) {
+    if (!mapLink) return false;
+    return mapLink.includes('maps.app.goo.gl');
+}
+
+// Function to validate if the link is a Google Maps link
+function isGoogleMapsLink(mapLink) {
+    if (!mapLink) return false;
+    return mapLink.includes('google.com/maps') || mapLink.includes('maps.app.goo.gl');
+}
+
 // Function to parse latitude and longitude from Google Maps URL
 function parseCoordinatesFromMapLink(mapLink) {
-    if (!mapLink) return { latitude: null, longitude: null };
+    if (!mapLink) {
+        return { latitude: null, longitude: null, isShortLink: false, isValid: false, error: 'Link peta tidak boleh kosong.' };
+    }
 
-    // Example URL: https://www.google.com/maps/place/.../@-6.9667,110.4167,12z
+    // Deteksi jika link adalah link pendek (maps.app.goo.gl)
+    if (isShortLink(mapLink)) {
+        return { latitude: null, longitude: null, isShortLink: true, isValid: false, error: 'Link pendek (maps.app.goo.gl) tidak didukung. Silakan gunakan link panjang dari Google Maps (contoh: https://www.google.com/maps/place/.../@latitude,longitude).' };
+    }
+
+    // Validasi apakah link adalah link Google Maps
+    if (!isGoogleMapsLink(mapLink)) {
+        return { latitude: null, longitude: null, isShortLink: false, isValid: false, error: 'Link harus berupa link Google Maps (contoh: https://www.google.com/maps/place/.../@latitude,longitude). Link lain tidak diperbolehkan.' };
+    }
+
+    // Contoh URL: https://www.google.com/maps/place/.../@-6.9667,110.4167,12z
     const regex = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
     const match = mapLink.match(regex);
     if (match) {
         return {
             latitude: parseFloat(match[1]),
-            longitude: parseFloat(match[2])
+            longitude: parseFloat(match[2]),
+            isShortLink: false,
+            isValid: true,
+            error: null
         };
     }
-    return { latitude: null, longitude: null };
+
+    return { latitude: null, longitude: null, isShortLink: false, isValid: false, error: 'Link Google Maps harus mengandung koordinat (contoh: @-6.9667,110.4167). Silakan periksa kembali link Anda.' };
 }
 
 // Fungsi untuk menampilkan data
@@ -159,7 +186,13 @@ form.addEventListener('submit', (e) => {
 
 function saveData(imageData) {
     const mapLink = document.getElementById('mapLink')?.value || '';
-    const { latitude, longitude } = parseCoordinatesFromMapLink(mapLink);
+    const { latitude, longitude, isShortLink, isValid, error } = parseCoordinatesFromMapLink(mapLink);
+
+    // Jika link tidak valid, tampilkan error dan hentikan penyimpanan
+    if (!isValid) {
+        alert(error);
+        return; // Hentikan penyimpanan
+    }
 
     const data = {
         id: document.getElementById('dataId')?.value || Date.now(),
@@ -244,6 +277,7 @@ window.editData = (index) => {
                     <label class="block text-sm font-medium text-gray-700 mb-2">Link Peta</label>
                     <input type="url" id="modalMapLink" value="${data.mapLink || ''}"
                         class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                    <p class="text-xs text-gray-500 mt-1">Gunakan link panjang dari Google Maps yang mengandung koordinat (contoh: https://www.google.com/maps/place/.../@latitude,longitude).</p>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Gambar</label>
@@ -306,6 +340,15 @@ window.editData = (index) => {
     modalForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
+        const mapLink = modalContent.querySelector('#modalMapLink').value;
+        const { isShortLink, isValid, error, latitude, longitude } = parseCoordinatesFromMapLink(mapLink);
+
+        // Jika link tidak valid, tampilkan error dan hentikan penyimpanan
+        if (!isValid) {
+            alert(error);
+            return; // Hentikan penyimpanan
+        }
+
         const submitButton = modalContent.querySelector('#modalSimpan');
         submitButton.disabled = true;
         submitButton.innerHTML = `
@@ -323,7 +366,9 @@ window.editData = (index) => {
             alamat: modalContent.querySelector('#modalAlamat').value,
             kodePos: modalContent.querySelector('#modalKodePos').value,
             fasilitas: modalContent.querySelector('#modalFasilitas').value.split(',').map(f => f.trim()),
-            mapLink: modalContent.querySelector('#modalMapLink').value,
+            mapLink: mapLink,
+            latitude: latitude,
+            longitude: longitude,
             gambar: modalPreview.src
         };
 
