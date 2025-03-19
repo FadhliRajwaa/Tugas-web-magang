@@ -1,17 +1,3 @@
-const usernameDisplay = document.getElementById('usernameDisplay');
-        const username = localStorage.getItem('username');
-        if (username) {
-            usernameDisplay.textContent = `Selamat datang, ${username}`;
-        }
-
-        // Handle logout
-        const logoutButton = document.getElementById('logoutButton');
-        logoutButton.addEventListener('click', () => {
-            localStorage.removeItem('sessionToken');
-            localStorage.removeItem('username');
-            window.location.href = './index.html';
-        });
-
 // Pemeriksaan session token secepat mungkin
 if (!localStorage.getItem('sessionToken')) {
     window.location.href = './index.html'; // Redirect ke halaman login jika tidak ada session token
@@ -22,6 +8,22 @@ if (!localStorage.getItem('lokasiData')) {
     localStorage.setItem('lokasiData', JSON.stringify([]));
 }
 
+// Tampilkan username di navbar
+const usernameDisplay = document.getElementById('usernameDisplay');
+const username = localStorage.getItem('username');
+if (username) {
+    usernameDisplay.textContent = `Selamat datang, ${username}`;
+}
+
+// Handle logout
+const logoutButton = document.getElementById('logoutButton');
+logoutButton.addEventListener('click', () => {
+    localStorage.removeItem('sessionToken');
+    localStorage.removeItem('username');
+    window.location.href = './index.html';
+});
+
+// Elemen form dan tabel
 const form = document.getElementById('dataForm');
 const tableBody = document.getElementById('dataTable');
 const imageInput = document.getElementById('gambar');
@@ -90,7 +92,7 @@ function isGoogleMapsLink(mapLink) {
 // Function to parse latitude and longitude from Google Maps URL
 function parseCoordinatesFromMapLink(mapLink) {
     if (!mapLink) {
-        return { latitude: null, longitude: null, isShortLink: false, isValid: false, error: 'Link peta tidak boleh kosong.' };
+        return { latitude: null, longitude: null, isShortLink: false, isValid: true, error: null }; // Map link boleh kosong
     }
 
     // Deteksi jika link adalah link pendek (maps.app.goo.gl)
@@ -128,7 +130,7 @@ function renderData() {
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50 transition-colors group';
         row.innerHTML = `
-            <td class="px-4 py-4 whitespace-nowrap">
+            <td class="px-4 py-4 whitespace-nowrap" data-label="Aksi">
                 <div class="flex items-center gap-2">
                     <button onclick="editData(${index})" class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,13 +144,13 @@ function renderData() {
                     </button>
                 </div>
             </td>
-            <td class="px-4 py-4 font-medium text-gray-900">${item.kecamatan}</td>
-            <td class="px-4 py-4 text-gray-600">${item.kelurahan}</td>
-            <td class="px-4 py-4 text-gray-600 max-w-xs">
+            <td class="px-4 py-4 font-medium text-gray-900" data-label="Kecamatan">${item.kecamatan}</td>
+            <td class="px-4 py-4 text-gray-600" data-label="Kelurahan">${item.kelurahan}</td>
+            <td class="px-4 py-4 text-gray-600 max-w-xs" data-label="Alamat">
                 <div class="text-sm">${item.alamat}</div>
                 <div class="text-xs text-gray-400 mt-1">${item.kodePos}</div>
             </td>
-            <td class="px-4 py-4">
+            <td class="px-4 py-4" data-label="Fasilitas">
                 <div class="flex flex-wrap gap-2 max-w-xs">
                     ${item.fasilitas.map(f => `
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -157,17 +159,17 @@ function renderData() {
                     `).join('')}
                 </div>
             </td>
-            <td class="px-4 py-4">
+            <td class="px-4 py-4" data-label="Peta">
                 ${item.mapLink ? `
                     <a href="${item.mapLink}" target="_blank" class="inline-flex items-center text-blue-600 hover:text-blue-800">
                         <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
                         </svg>
-                        <span class="hidden md:inline">Peta</span>
+                        <span class="hidden sm:inline">Peta</span>
                     </a>
                 ` : '-'}
             </td>
-            <td class="px-4 py-4">
+            <td class="px-4 py-4" data-label="Gambar">
                 <div class="relative group cursor-pointer">
                     <img src="${item.gambar || 'https://via.placeholder.com/100'}" 
                          alt="Lokasi" 
@@ -192,7 +194,7 @@ form.addEventListener('submit', (e) => {
         });
     } else {
         const existingImage = document.getElementById('dataId').value 
-            ? JSON.parse(localStorage.getItem('lokasiData')).find(item => item.id == document.getElementById('dataId').value).gambar 
+            ? JSON.parse(localStorage.getItem('lokasiData')).find(item => item.id == document.getElementById('dataId').value)?.gambar 
             : '';
         saveData(existingImage);
     }
@@ -237,7 +239,6 @@ function saveData(imageData) {
     
     try {
         localStorage.setItem('lokasiData', JSON.stringify(storedData));
-        console.log('Data saved to localStorage:', storedData);
         form.reset();
         document.getElementById('dataId').value = '';
         previewImage.classList.add('hidden');
@@ -248,74 +249,97 @@ function saveData(imageData) {
     }
 }
 
-
-
 // Fungsi Edit Data dengan Modal
 window.editData = (index) => {
     const data = JSON.parse(localStorage.getItem('lokasiData'))[index];
     
+    // Menonaktifkan scroll pada halaman utama
+    document.body.classList.add('modal-open');
+
     // Membuat elemen modal dengan transisi awal
     const modalOverlay = document.createElement('div');
-    modalOverlay.className = 'fixed inset-0 bg-black bg-opacity-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ease-in-out';
-    
+    modalOverlay.className = 'fixed inset-0 bg-black bg-opacity-0 z-50 flex items-center justify-center p-4 transition-all duration-500 ease-in-out';
+
     const modalContent = document.createElement('div');
-    modalContent.className = 'bg-white rounded-xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto opacity-0 scale-95 transition-all duration-300 ease-in-out';
+    modalContent.className = 'bg-white rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto opacity-0 scale-95 transition-all duration-500 ease-in-out transform';
     modalContent.innerHTML = `
-        <h3 class="text-2xl font-bold mb-6 text-gray-900 transform transition-all duration-300">Edit Lokasi</h3>
-        <form id="modalForm" class="space-y-6">
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
+                <i class="fas fa-edit mr-3 text-blue-600"></i> Edit Lokasi
+            </h3>
+            <button id="modalClose" class="text-gray-500 hover:text-gray-700 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <form id="modalForm" class="space-y-6 sm:space-y-8">
+            <div class="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Kecamatan</label>
+                    <label class="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                        <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i> Kecamatan
+                    </label>
                     <input type="text" id="modalKecamatan" value="${data.kecamatan}" required
-                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Kelurahan</label>
+                    <label class="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                        <i class="fas fa-city mr-2 text-gray-500"></i> Kelurahan
+                    </label>
                     <input type="text" id="modalKelurahan" value="${data.kelurahan}" required
-                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Kode Pos</label>
+                    <label class="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                        <i class="fas fa-mailbox mr-2 text-gray-500"></i> Kode Pos
+                    </label>
                     <input type="text" id="modalKodePos" value="${data.kodePos}" required
-                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm">
                 </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Alamat</label>
+                <div class="sm:col-span-2">
+                    <label class="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                        <i class="fas fa-road mr-2 text-gray-500"></i> Alamat
+                    </label>
                     <input type="text" id="modalAlamat" value="${data.alamat}" required
-                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm">
                 </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Fasilitas (pisahkan dengan koma)</label>
-                    <input type="text" id="modalFasilitas" value="${data.fasilitas.join(', ')}"
-                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                <div class="sm:col-span-2">
+                    <label class="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                        <i class="fas fa-list-ul mr-2 text-gray-500"></i> Fasilitas (pisahkan dengan koma)
+                    </label>
+                    <input type="text" id="modalFasilitas" value="${data.fasilitas.join(', ')}" placeholder="Contoh: WiFi, Parkir, AC"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm">
                 </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Link Peta</label>
-                    <input type="url" id="modalMapLink" value="${data.mapLink || ''}"
-                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                <div class="sm:col-span-2">
+                    <label class="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                        <i class="fas fa-map mr-2 text-gray-500"></i> Link Peta (Opsional)
+                    </label>
+                    <input type="url" id="modalMapLink" value="${data.mapLink || ''}" placeholder="Masukkan link Google Maps dengan koordinat"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm">
                     <p class="text-xs text-gray-500 mt-1">Gunakan link panjang dari Google Maps yang mengandung koordinat (contoh: https://www.google.com/maps/place/.../@latitude,longitude).</p>
                 </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Gambar</label>
+                <div class="sm:col-span-2">
+                    <label class="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                        <i class="fas fa-image mr-2 text-gray-500"></i> Gambar (Opsional)
+                    </label>
                     <div class="flex items-center gap-4">
                         <div class="relative group flex-1">
                             <input type="file" id="modalGambar" accept="image/*"
                                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                            <div class="px-4 py-2 rounded-lg border border-gray-300 group-hover:border-blue-500 group-hover:bg-blue-50 transition-all duration-200">
+                            <div class="px-4 py-3 rounded-lg border border-gray-300 group-hover:border-blue-500 group-hover:bg-blue-50 transition-all shadow-sm flex items-center">
+                                <i class="fas fa-upload mr-2 text-gray-600"></i>
                                 <span class="text-gray-600">Ubah Gambar</span>
                             </div>
                         </div>
                         <img id="modalPreview" src="${data.gambar || 'https://via.placeholder.com/100'}" 
-                            class="w-16 h-16 object-cover rounded-lg border transform transition-all duration-300 hover:scale-110">
+                            class="w-24 h-24 object-cover rounded-lg border shadow-md transform transition-all duration-300 hover:scale-105">
                     </div>
                 </div>
             </div>
-            <div class="flex justify-end gap-4 pt-6">
-                <button type="button" id="modalBatal" class="px-6 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:shadow-md transform hover:-translate-y-0.5">
-                    Batal
+            <div class="flex justify-end gap-4 pt-4 sm:pt-6">
+                <button type="button" id="modalBatal" class="inline-flex items-center px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300 shadow-md transform hover:-translate-y-0.5">
+                    <i class="fas fa-times mr-2"></i> Batal
                 </button>
-                <button type="submit" id="modalSimpan" class="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-all duration-200 hover:shadow-md transform hover:-translate-y-0.5 flex items-center">
-                    <span>Simpan Perubahan</span>
+                <button type="submit" id="modalSimpan" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 shadow-md transform hover:-translate-y-0.5">
+                    <i class="fas fa-save mr-2"></i> Simpan Perubahan
                 </button>
             </div>
         </form>
@@ -402,12 +426,22 @@ window.editData = (index) => {
         closeModal(modalOverlay, modalContent);
     });
 
+    // Handle tombol close (X)
+    modalContent.querySelector('#modalClose').addEventListener('click', () => {
+        closeModal(modalOverlay, modalContent);
+    });
+
     // Tutup modal saat klik di luar
     modalOverlay.addEventListener('click', (e) => {
         if (e.target === modalOverlay) {
             closeModal(modalOverlay, modalContent);
         }
     });
+
+    // Fokus ke field pertama untuk aksesibilitas
+    setTimeout(() => {
+        modalContent.querySelector('#modalKecamatan').focus();
+    }, 500);
 };
 
 // Fungsi untuk menutup modal dengan animasi
@@ -415,7 +449,11 @@ function closeModal(overlay, content) {
     overlay.classList.remove('bg-opacity-50');
     content.classList.remove('opacity-100', 'scale-100');
     content.classList.add('opacity-0', 'scale-95');
-    setTimeout(() => overlay.remove(), 300);
+    setTimeout(() => {
+        overlay.remove();
+        // Mengembalikan scroll pada halaman utama
+        document.body.classList.remove('modal-open');
+    }, 300);
 }
 
 // Fungsi Hapus Data
