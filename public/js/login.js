@@ -5,11 +5,11 @@ if (localStorage.getItem('sessionToken')) {
 // Simulated user database (in a real app, this would be on the server)
 const users = [
     {
-        username: 'fadhli123',
+        username: 'fadhli',
         // Simulated hashed password (in a real app, use bcrypt to hash this)
         // For demo purposes, we'll use a simple string. In reality, this would be a hash like:
         // bcrypt.hashSync('holi123', 10)
-        password: 'hashed_holi123', // Pretend this is a bcrypt hash
+        password: 'hashed_123', // Pretend this is a bcrypt hash
     }
 ];
 
