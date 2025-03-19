@@ -1,3 +1,7 @@
+if (localStorage.getItem('sessionToken')) {
+    window.location.href = './dashboard.html'; // Redirect ke dashboard jika sudah login
+}
+
 // Simulated user database (in a real app, this would be on the server)
 const users = [
     {
@@ -13,6 +17,13 @@ const users = [
 function simulateHash(password) {
     // In a real app, use bcrypt.hashSync(password, 10)
     return 'hashed_' + password; // This is just for demo purposes
+}
+
+// Function to generate a more secure session token (for demo purposes)
+function generateSessionToken(username) {
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 15);
+    return btoa(`${username}:${timestamp}:${randomString}`); // Base64 encode for simplicity
 }
 
 // Function to show error messages
@@ -31,6 +42,14 @@ const showError = (message) => {
     header.parentNode.insertBefore(errorElement, form);
 };
 
+// Pemeriksaan session token saat halaman dimuat
+document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('sessionToken')) {
+        // Jika session token ada, arahkan ke dashboard
+        window.location.href = './dashboard.html';
+    }
+});
+
 // Login form submission
 const loginForm = document.getElementById('login-form');
 const usernameInput = document.getElementById('username');
@@ -42,6 +61,12 @@ loginForm.addEventListener('submit', (e) => {
     const username = usernameInput.value.trim();
     const password = passwordInput.value.trim();
 
+    // Validasi input
+    if (!username || !password) {
+        showError('Username dan password tidak boleh kosong!');
+        return;
+    }
+
     // Simulate hashing the input password
     const hashedPassword = simulateHash(password);
 
@@ -49,8 +74,8 @@ loginForm.addEventListener('submit', (e) => {
     const user = users.find(u => u.username === username && u.password === hashedPassword);
 
     if (user) {
-        // Generate a simple session token (in a real app, use JWT)
-        const sessionToken = btoa(username + ':' + Date.now()); // Base64 encode for simplicity
+        // Generate a session token
+        const sessionToken = generateSessionToken(username);
         localStorage.setItem('sessionToken', sessionToken);
         localStorage.setItem('username', username);
 

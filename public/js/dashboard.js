@@ -1,6 +1,20 @@
-// Check if the user is authenticated
+const usernameDisplay = document.getElementById('usernameDisplay');
+        const username = localStorage.getItem('username');
+        if (username) {
+            usernameDisplay.textContent = `Selamat datang, ${username}`;
+        }
+
+        // Handle logout
+        const logoutButton = document.getElementById('logoutButton');
+        logoutButton.addEventListener('click', () => {
+            localStorage.removeItem('sessionToken');
+            localStorage.removeItem('username');
+            window.location.href = './index.html';
+        });
+
+// Pemeriksaan session token secepat mungkin
 if (!localStorage.getItem('sessionToken')) {
-    window.location.href = './index.html'; // Redirect to login page if no session token
+    window.location.href = './index.html'; // Redirect ke halaman login jika tidak ada session token
 }
 
 // Inisialisasi data di localStorage jika belum ada
@@ -86,7 +100,7 @@ function parseCoordinatesFromMapLink(mapLink) {
 
     // Validasi apakah link adalah link Google Maps
     if (!isGoogleMapsLink(mapLink)) {
-        return { latitude: null, longitude: null, isShortLink: false, isValid: false, error: 'Link harus berupa link Google Maps (contoh: https://www.google.com/maps/place/.../@latitude,longitude). Link lain tidak diperbolehkan.' };
+        return { latitude: null, longitude: null, isShortLink: false, isValid: false, error: 'Link harus berupa link Google Maps (contoh: https://www.google.com/maps/place/.../@latitude,longitude). Link lain seperti GitHub tidak diperbolehkan.' };
     }
 
     // Contoh URL: https://www.google.com/maps/place/.../@-6.9667,110.4167,12z
@@ -233,6 +247,8 @@ function saveData(imageData) {
         alert('Gagal menyimpan data: ' + e.message);
     }
 }
+
+
 
 // Fungsi Edit Data dengan Modal
 window.editData = (index) => {
